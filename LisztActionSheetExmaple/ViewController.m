@@ -36,8 +36,9 @@
     }
     else if(sender.tag-10==1){
         LisztActionSheetButton *button1 = [LisztActionSheetButton configSheetItemTitle:@"删除联系人" titleColor:[UIColor redColor] backgroudColor:[UIColor whiteColor] highlightedColor:[UIColor grayColor] font:[UIFont systemFontOfSize:17.f]];
+        LisztActionSheetButton *button2 = [LisztActionSheetButton configSheetItemTitle:@"举报" titleColor:[UIColor blackColor] backgroudColor:[UIColor whiteColor] highlightedColor:[UIColor grayColor] font:[UIFont systemFontOfSize:17.f]];
         
-        [LisztActionSheet actionSheetTitle:@"将联系人\"Liszt\"正在删除,同时删除该联系人的所有聊天记录" cancelButtonTitle:@"取消" otherButtonItems:@[button1] buttonDidSelectBlock:^(NSInteger buttonIndex) {
+        [LisztActionSheet actionSheetTitle:@"将联系人\"Liszt\"正在删除,同时删除该联系人的所有聊天记录" cancelButtonTitle:@"取消" otherButtonItems:@[button1,button2] buttonDidSelectBlock:^(NSInteger buttonIndex) {
             NSLog(@"index:%li",buttonIndex);
         }];
     }

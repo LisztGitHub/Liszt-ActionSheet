@@ -13,9 +13,9 @@
 
 typedef NS_ENUM(NSUInteger,LisztActionSheetItemType) {
     /*LisztActionSheetButton*/
-    LisztActionSheetItem_Button,
+    LisztActionSheetItemButton,
     /*NSString*/
-    LisztActionSheetItem_String
+    LisztActionSheetItemString
 };
 
 @interface LisztActionSheet(){
@@ -37,12 +37,18 @@ typedef NS_ENUM(NSUInteger,LisztActionSheetItemType) {
 @implementation LisztActionSheet
 
 + (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray<LisztActionSheetButton *> *)otherButtons buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock{
-    return [[LisztActionSheet alloc] initWithTitle:title cancelButtonTitle:cancelTitle otherButtonItems:otherButtons itemType:LisztActionSheetItem_Button buttonDidSelectBlock:buttonSelectBlock];
+    return [[LisztActionSheet alloc]initWithTitle:title cancelButtonTitle:cancelTitle otherButtonItems:otherButtons handleActionButton:nil handleActionSheet:nil buttonDidSelectBlock:buttonSelectBlock];
 }
 + (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonStrings:(NSArray<NSString *> *)otherButtons buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock{
-    return [[LisztActionSheet alloc] initWithTitle:title cancelButtonTitle:cancelTitle otherButtonItems:otherButtons itemType:LisztActionSheetItem_String buttonDidSelectBlock:buttonSelectBlock];
+    return [[LisztActionSheet alloc]initWithTitle:title cancelButtonTitle:cancelTitle otherButtonItems:otherButtons handleActionButton:nil handleActionSheet:nil buttonDidSelectBlock:buttonSelectBlock];
 }
-- (instancetype)initWithTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray *)otherButtons itemType:(LisztActionSheetItemType)type buttonDidSelectBlock:(void (^)(NSInteger))buttonSelectBlock{
++ (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray<LisztActionSheetButton *> *)otherButtons handleActionSheet:(LisztActionSheetBlock)actionSheetBlock buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock{
+    return [[LisztActionSheet alloc]initWithTitle:title cancelButtonTitle:cancelTitle otherButtonItems:otherButtons handleActionButton:nil handleActionSheet:actionSheetBlock buttonDidSelectBlock:buttonSelectBlock];
+}
++ (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray <LisztActionSheetButton *>*)otherButtons handleActionButton:(LisztActionLoadButtonBlock)actionButtonBlock handleActionSheet:(LisztActionSheetBlock)actionSheetBlock buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock{
+    return [[LisztActionSheet alloc]initWithTitle:title cancelButtonTitle:cancelTitle otherButtonItems:otherButtons handleActionButton:actionButtonBlock handleActionSheet:actionSheetBlock buttonDidSelectBlock:buttonSelectBlock];
+}
+- (instancetype)initWithTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray *)otherButtons handleActionButton:(LisztActionLoadButtonBlock)actionButtonBlock handleActionSheet:(LisztActionSheetBlock)actionSheetBlock buttonDidSelectBlock:(void (^)(NSInteger))buttonSelectBlock{
     self = [super init];
     if(self){
         if(!otherButtons.count)return nil;
@@ -57,15 +63,21 @@ typedef NS_ENUM(NSUInteger,LisztActionSheetItemType) {
         CGFloat totalHeight = titleHeight + cancelHeight + otherHeight + (titleHeight?10:0);
         self.contentView.frame = CGRectMake(0, CGRectGetHeight(self.frame), CGRectGetWidth(self.frame), totalHeight);
         
+        LisztActionSheetItemType type = [otherButtons[0] isKindOfClass:[NSString class]]?LisztActionSheetItemString:LisztActionSheetItemButton;
+        
         [otherButtons enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if(actionButtonBlock){
+                actionButtonBlock(idx);
+            }
+            
             UIButton *itemButton = [UIButton buttonWithType:UIButtonTypeCustom];
             itemButton.frame = CGRectMake(0, cancelHeight?(self.contentView.frame.size.height - BUTTON_HEIGHT - 10) - BUTTON_HEIGHT * idx - BUTTON_HEIGHT:self.contentView.frame.size.height - BUTTON_HEIGHT * idx - BUTTON_HEIGHT, CGRectGetWidth(self.contentView.frame), BUTTON_HEIGHT);
-            [itemButton setTitleColor:type==LisztActionSheetItem_String?[UIColor blackColor]:[(LisztActionSheetButton *)otherButtons[0] titleColor] forState:UIControlStateNormal];
+            [itemButton setTitleColor:type==LisztActionSheetItemString?[UIColor blackColor]:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] titleColor] forState:UIControlStateNormal];
             itemButton.tag = otherButtons.count-idx-1;
-            [itemButton setTitle:type==LisztActionSheetItem_String?otherButtons[otherButtons.count-idx-1]:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] title] forState:UIControlStateNormal];
-            itemButton.titleLabel.font = type==LisztActionSheetItem_String?[UIFont systemFontOfSize:17.f]:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] font];
-            [itemButton setBackgroundImage:type==LisztActionSheetItem_String?[LisztActionSheet buttonImageFromColor:LISZTSHEET_COLOR(124, 124, 124, 0.8)]:[LisztActionSheet buttonImageFromColor:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] highlightedColor]] forState:UIControlStateHighlighted];
-            [itemButton setBackgroundImage:type==LisztActionSheetItem_String?[LisztActionSheet buttonImageFromColor:LISZTSHEET_COLOR(255, 255, 255, 0.95)]:[LisztActionSheet buttonImageFromColor:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] backgroudColor]] forState:UIControlStateNormal];
+            [itemButton setTitle:type==LisztActionSheetItemString?otherButtons[otherButtons.count-idx-1]:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] title] forState:UIControlStateNormal];
+            itemButton.titleLabel.font = type==LisztActionSheetItemString?[UIFont systemFontOfSize:17.f]:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] font];
+            [itemButton setBackgroundImage:type==LisztActionSheetItemString?[LisztActionSheet buttonImageFromColor:LISZTSHEET_COLOR(124, 124, 124, 0.9)]:[LisztActionSheet buttonImageFromColor:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] highlightedColor]] forState:UIControlStateHighlighted];
+            [itemButton setBackgroundImage:type==LisztActionSheetItemString?[LisztActionSheet buttonImageFromColor:LISZTSHEET_COLOR(255, 255, 255, 0.95)]:[LisztActionSheet buttonImageFromColor:[(LisztActionSheetButton *)otherButtons[otherButtons.count-idx-1] backgroudColor]] forState:UIControlStateNormal];
             [itemButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
             [self.contentView addSubview:itemButton];
             
@@ -80,6 +92,9 @@ typedef NS_ENUM(NSUInteger,LisztActionSheetItemType) {
         }
         if(titleHeight){
             [self.contentView addSubview:self.titleBgView];
+        }
+        if(actionSheetBlock){
+            actionSheetBlock(self);
         }
         [self showActionSheet];
     }
@@ -141,7 +156,7 @@ typedef NS_ENUM(NSUInteger,LisztActionSheetItemType) {
         [_cancelButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
         _cancelButton.tag = 99;
-        [_cancelButton setBackgroundImage:[LisztActionSheet buttonImageFromColor:LISZTSHEET_COLOR(124, 124, 124, 0.8)] forState:UIControlStateHighlighted];
+        [_cancelButton setBackgroundImage:[LisztActionSheet buttonImageFromColor:LISZTSHEET_COLOR(124, 124, 124, 0.9)] forState:UIControlStateHighlighted];
         [_cancelButton setBackgroundImage:[LisztActionSheet buttonImageFromColor:LISZTSHEET_COLOR(255, 255, 255, 0.95)] forState:UIControlStateNormal];
         [_cancelButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
         _cancelButton.titleLabel.font = [UIFont systemFontOfSize:17.f];
@@ -183,6 +198,9 @@ typedef NS_ENUM(NSUInteger,LisztActionSheetItemType) {
 }
 - (void)setTitleColor:(UIColor *)titleColor{
     self.titleLabel.textColor = titleColor;
+}
+- (void)setTitleFont:(UIFont *)titleFont{
+    self.titleLabel.font = titleFont;
 }
 
 #pragma mark - Frame Show

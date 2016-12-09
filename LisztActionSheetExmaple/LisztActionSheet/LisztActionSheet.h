@@ -7,8 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+@class LisztActionSheet;
+@class LisztActionSheetButton;
 
 typedef void(^LisztSheetButtonActionBlock)(NSInteger index);
+typedef void(^LisztActionSheetBlock)(LisztActionSheet *sheet);
+typedef void(^LisztActionLoadButtonBlock)(NSInteger idx);
 
 @interface LisztActionSheetButton:NSObject
 /*标题*/
@@ -28,6 +32,8 @@ typedef void(^LisztSheetButtonActionBlock)(NSInteger index);
 @interface LisztActionSheet : UIView
 + (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonStrings:(NSArray <NSString *>*)otherButtons buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock;
 + (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray <LisztActionSheetButton *>*)otherButtons buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock;
++ (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray <LisztActionSheetButton *>*)otherButtons handleActionSheet:(LisztActionSheetBlock)actionSheetBlock buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock;
++ (instancetype)actionSheetTitle:(NSString *)title cancelButtonTitle:(NSString *)cancelTitle otherButtonItems:(NSArray <LisztActionSheetButton *>*)otherButtons handleActionButton:(LisztActionLoadButtonBlock)actionButtonBlock handleActionSheet:(LisztActionSheetBlock)actionSheetBlock buttonDidSelectBlock:(LisztSheetButtonActionBlock)buttonSelectBlock;
 
 - (void)setCancelTitle:(NSString *)title forState:(UIControlState)state;
 - (void)setCancelTitleColor:(UIColor *)color forState:(UIControlState)state;
@@ -35,4 +41,5 @@ typedef void(^LisztSheetButtonActionBlock)(NSInteger index);
 @property (strong, nonatomic) UIFont *cancelButtonFont;
 @property (strong, nonatomic) UIColor *titleBackgroudColor;
 @property (strong, nonatomic) UIColor *titleColor;
+@property (strong, nonatomic) UIFont *titleFont;
 @end
